@@ -18,7 +18,6 @@ class Grid:
         self.resolution = resolution
         self.width = width
         self.height = height
-        self.resolution = resolution
     
     def cell_at(self, x, y):
         return self.grid[y, x]
@@ -40,7 +39,9 @@ class Planner:
         # self.validate_destinations() Assume destinations are valid
         self.control_center = self.get_current_position()
         self.curr_marker_id = 0
+        self.global_path = [] # all poses in path, (may be handy for distance calculations)
         self.make_deliveries()
+        self.publish_path(self.global_path)
         rospy.signal_shutdown("Delivery Complete!")
         
     
@@ -61,7 +62,10 @@ class Planner:
                 result = self.move_to_goal(goal_x, goal_y)
                 rospy.loginfo("DELIVERED PACKAGE " + str(package_number))
                 curr_load -= 1
-            package_number += 1
+                package_number += 1
+
+        # return to control-center
+        result = self.move_to_goal(self.control_center.position[0], self.control_center.position[1])
 
         rospy.loginfo("COMPLETED ALL DELIVERIES")       
         if result:
@@ -124,9 +128,8 @@ class Planner:
         path = resp.plan.poses
 
         print("Path reached? : ", wait , "Path length", len(path))
+        self.global_path.extend(path)
         
-        self.publish_path(path)
-
        # If the result doesn't arrive, assume the Server is not available
         if not wait:
             rospy.logerr("Action server not available!")
@@ -139,14 +142,15 @@ class Planner:
     def publish_path(self, path):
         """
         publishes path locations as markers 
-        """
-         
+        """       
         if not path:
-            print("No path found between", self.start, "and", self.goal)
+            print("No path found")
             return
+        # print(len(path))
         for pose_stamp in path:
             self.publish_marker(pose_stamp, self.curr_marker_id)
-            self.curr_marker_id += 1
+            self.curr_marker_id += 1 
+
 
     def publish_marker(self, curr_pose, id):
         """
@@ -182,8 +186,8 @@ class Planner:
 # If the python node is executed as main process (sourced directly)
 if __name__ == '__main__':
     try:
-        destinations = [[3.0, 3.5], [6.5, 4.9], [7.0, 1.2] , [4.5, 7.5], [7.8, 4.5]]
-        plan = Planner(destinations=destinations)
+        destinations = [[3.0, 3.5], [6.5, 4.9] , [7.0, 1.2] , [4.5, 7.5], [7.8, 4.5]]
+        plan = Planner(destinations=destinations, capacity=20)
         rospy.spin()
     except rospy.ROSInterruptException:
         rospy.loginfo("Navigation test finished.")
