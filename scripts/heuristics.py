@@ -16,7 +16,6 @@ def euclidean_sort(start, goals_list):
         dist_dict[i] = distance
 
     sort_dist_dict = sorted(dist_dict.items(), key=lambda x: x[1])
-
     for goal in sort_dist_dict:
         sorted_goals.append(goals_list[goal[0]])
 
@@ -116,3 +115,44 @@ def cosine_sort(start, goals_list):
         sorted_goals.append(goals_list[goal[0]])
 
     return sorted_goals
+
+
+def dynamic_euclidean_sort(start, goals_list):
+    '''
+    Calculates the euclidean distance for each goal to each
+    remaining goal to find the closest one, then sorts the
+    goals based off this measure and returns the sorted list
+    '''
+    sorted_goals = []
+    
+    next_goal = dynamic_euclidean_helper(start, goals_list)
+    sorted_goals.append(next_goal)
+
+    while len(goals_list) > 1:
+        visited_idx = goals_list.index(next_goal)
+        goals_list.remove(goals_list[visited_idx])
+        next_goal = dynamic_euclidean_helper(next_goal, goals_list)
+        sorted_goals.append(next_goal)
+    
+    return sorted_goals
+
+def dynamic_euclidean_helper(curr, goals_list):
+    '''
+    Helper function for dynamic_euclidean_sort(). Returns the
+    closest goal to the current point
+    '''
+    sorted_goals = []
+    dist_dict = {}
+
+    for i in range(len(goals_list)):
+        x_diff = pow(goals_list[i].x - curr.x, 2)
+        y_diff = pow(goals_list[i].y - curr.y, 2)
+        distance = sqrt(x_diff + y_diff)
+        dist_dict[i] = distance
+
+    sort_dist_dict = sorted(dist_dict.items(), key=lambda x: x[1])
+    for goal in sort_dist_dict:
+        sorted_goals.append(goals_list[goal[0]])
+
+    return sorted_goals[0]
+
