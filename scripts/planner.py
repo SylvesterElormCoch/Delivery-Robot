@@ -28,7 +28,7 @@ class Planner:
         Initializes a rospy node to let the SimpleActionClient publish and subscribe
         Sets up server and validates goal locaions. Keeps track of control center and capacity
         """
-        rospy.init_node('move_to_goal_py') 
+        rospy.init_node('delivery_robot') 
         msg = rospy.wait_for_message("map", OccupancyGrid)
         self.map = Grid(msg.data, msg.info.width, msg.info.height, msg.info.resolution)
         self.marker_publisher = rospy.Publisher("visualization_marker", Marker, queue_size=1)
