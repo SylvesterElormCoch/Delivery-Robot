@@ -8,6 +8,8 @@ from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from visualization_msgs.msg import Marker
 from geometry_msgs.msg import PoseStamped, Pose
 from nav_msgs.srv import GetPlan
+from pose.py import Pose
+from heuristics.py import heuristic
 
 class Grid:
     """
@@ -33,7 +35,7 @@ class Planner:
         self.map = Grid(msg.data, msg.info.width, msg.info.height, msg.info.resolution)
         self.marker_publisher = rospy.Publisher("visualization_marker", Marker, queue_size=1)
         self.setup_server()
-        self.destinations = destinations  
+        self.destinations = self.create_destinations(destinations)  
         self.capacity = capacity
         self.listener = tf.TransformListener()
         # self.validate_destinations() Assume destinations are valid
@@ -43,7 +45,13 @@ class Planner:
         self.make_deliveries()
         self.publish_path(self.global_path)
         rospy.signal_shutdown("Delivery Complete!")
-        
+    
+
+    def create_destinations(self, destinations):
+        poses = []
+        for d in destinations:
+            poses.append(Pose(d[0], d[1]))
+        return poses
     
     def make_deliveries(self):
         """
@@ -52,8 +60,9 @@ class Planner:
         """
         package_number = 0
         curr_load = self.capacity
+        self.destinations = heuristic('euclidean', self.control_center, self.destinations)
         while package_number < len(self.destinations):
-            goal_x, goal_y = self.destinations[package_number]
+            goal_x, goal_y = self.destinations[package_number].x, self.destinations[package_number].y
             if curr_load == 0:
                 result = self.move_to_goal(self.control_center.position[0], self.control_center.position[1])
                 rospy.loginfo("RETURNING TO CONTROL CENTER")
@@ -180,7 +189,7 @@ class Planner:
         current_pose = Pose()
         self.listener.waitForTransform('/map', '/base_link', rospy.Time(0), rospy.Duration(5.0))
         (current_pose.position, current_pose.orientation) = self.listener.lookupTransform('/map', '/base_link', rospy.Time(0))
-        return current_pose
+        return Pose(current_pose.position.x, current_pose.position.y)
 
 
 # If the python node is executed as main process (sourced directly)
