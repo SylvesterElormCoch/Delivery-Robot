@@ -1,4 +1,5 @@
-class Pose:
+#!/usr/bin/env python
+class cPose:
     def __init__(self, x, y):
         '''
         Initialization function. 
@@ -9,4 +10,4 @@ class Pose:
     
     def __str__(self):
         '''String method for testing purposes'''
-        return 'Pose(' + str(self.x) + ' , ' + str(self.y) + ')'
+        return 'cPose(' + str(self.x) + ' , ' + str(self.y) + ')'

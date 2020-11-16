@@ -16,6 +16,7 @@ See the [maps]() for some test maps.
 
 ## Compilation / Usage
  * Setup the ROS environment by running `roscore` in one terminal
+ * Run `source ~devel/setup.bash`
  * To launch the `delivery_robot`, run `roslaunch delivery_robot delivery_robot.launch` in another terminal
 
 
