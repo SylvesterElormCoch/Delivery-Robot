@@ -8,8 +8,9 @@ from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from visualization_msgs.msg import Marker
 from geometry_msgs.msg import PoseStamped, Pose
 from nav_msgs.srv import GetPlan
-from pose.py import Pose
-from heuristics.py import heuristic
+from cPose import cPose
+from heuristics import heuristic
+
 
 class Grid:
     """
@@ -30,7 +31,7 @@ class Planner:
         Initializes a rospy node to let the SimpleActionClient publish and subscribe
         Sets up server and validates goal locaions. Keeps track of control center and capacity
         """
-        rospy.init_node('move_to_goal_py') 
+        rospy.init_node('delivery_robot') 
         msg = rospy.wait_for_message("map", OccupancyGrid)
         self.map = Grid(msg.data, msg.info.width, msg.info.height, msg.info.resolution)
         self.marker_publisher = rospy.Publisher("visualization_marker", Marker, queue_size=1)
@@ -42,7 +43,10 @@ class Planner:
         self.control_center = self.get_current_position()
         self.curr_marker_id = 0
         self.global_path = [] # all poses in path, (may be handy for distance calculations)
+        start_time = rospy.get_time()
         self.make_deliveries()
+        end_time = rospy.get_time()
+        rospy.loginfo("Total time taken " +  (str(end_time - start_time)) +  " secs") 
         self.publish_path(self.global_path)
         rospy.signal_shutdown("Delivery Complete!")
     
@@ -50,7 +54,7 @@ class Planner:
     def create_destinations(self, destinations):
         poses = []
         for d in destinations:
-            poses.append(Pose(d[0], d[1]))
+            poses.append(cPose(d[0], d[1]))
         return poses
     
     def make_deliveries(self):
@@ -74,7 +78,7 @@ class Planner:
                 package_number += 1
 
         # return to control-center
-        result = self.move_to_goal(self.control_center.position[0], self.control_center.position[1])
+        result = self.move_to_goal(self.control_center.x, self.control_center.y)
 
         rospy.loginfo("COMPLETED ALL DELIVERIES")       
         if result:
@@ -110,8 +114,8 @@ class Planner:
         start.header.seq = 0
         start.header.frame_id = "map"
         start.header.stamp = rospy.Time(0)
-        start.pose.position.x = curr.position[0]
-        start.pose.position.y = curr.position[1]
+        start.pose.position.x = curr.x
+        start.pose.position.y = curr.y
        
        # Creates a new goal with the MoveBaseGoal constructor
         goal = MoveBaseGoal()
@@ -136,7 +140,6 @@ class Planner:
         resp = get_plan(req.start, req.goal, req.tolerance)
         path = resp.plan.poses
 
-        print("Path reached? : ", wait , "Path length", len(path))
         self.global_path.extend(path)
         
        # If the result doesn't arrive, assume the Server is not available
@@ -189,7 +192,8 @@ class Planner:
         current_pose = Pose()
         self.listener.waitForTransform('/map', '/base_link', rospy.Time(0), rospy.Duration(5.0))
         (current_pose.position, current_pose.orientation) = self.listener.lookupTransform('/map', '/base_link', rospy.Time(0))
-        return Pose(current_pose.position.x, current_pose.position.y)
+        return cPose(current_pose.position[0], current_pose.position[1])
+
 
 
 # If the python node is executed as main process (sourced directly)
