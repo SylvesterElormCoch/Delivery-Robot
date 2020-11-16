@@ -9,7 +9,7 @@ from visualization_msgs.msg import Marker
 from geometry_msgs.msg import PoseStamped, Pose
 from nav_msgs.srv import GetPlan
 from pose.py import Pose
-from heuristics.py import *
+from heuristics.py import heuristic
 
 class Grid:
     """
@@ -60,7 +60,7 @@ class Planner:
         """
         package_number = 0
         curr_load = self.capacity
-        self.destinations = euclidean_sort(self.control_center, self.destinations)
+        self.destinations = heuristic('euclidean', self.control_center, self.destinations)
         while package_number < len(self.destinations):
             goal_x, goal_y = self.destinations[package_number].x, self.destinations[package_number].y
             if curr_load == 0:
