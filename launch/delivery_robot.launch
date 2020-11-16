@@ -13,8 +13,14 @@
   <arg name="3d_sensor"  default="$(optenv TURTLEBOT_3D_SENSOR kinect)"/>  <!-- kinect, asus_xtion_pro -->
 
   <!-- Name of the map to use (without path nor extension) and initial position -->
-  <arg name="map_file"       default="better500"/> 
-  <arg name="world_file"     default="better500"/>  <!-- Not sure what to put here since no .world file-->
+
+  <!-- (Un)comment to use/ remove default map file -->
+  <arg name="map_file"       default=" $(env TURTLEBOT_STAGE_MAP_FILE)"/> <!-- robopark_plan -->
+  <arg name="world_file"     default=" $(env TURTLEBOT_STAGE_WORLD_FILE)"/>
+  <!-- (Un)comment to use/ remove custom map file -->
+  <!-- <arg name="map_file"       default="$(find delivery_robot)/Maps/better500.yaml"/> -->
+  <!-- <arg name="world_file"     default="$(find delivery_robot)/Maps/better500.world"/> -->
+
   <arg name="initial_pose_x" default="2.0"/>
   <arg name="initial_pose_y" default="2.0"/>
   <arg name="initial_pose_a" default="0.0"/>
@@ -80,5 +86,5 @@
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find turtlebot_stage)/rviz/robot_navigation.rviz"/>
 
   <!-- ************** Planner ************ -->
-  <node name="delivery_robot" pkg="delivery_robot" type="delivery_robot"/>
+  <node name="delivery_robot" pkg="delivery_robot" type="planner.py"/>
 </launch>

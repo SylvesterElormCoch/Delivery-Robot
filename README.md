@@ -16,7 +16,6 @@ See the [maps]() for some test maps.
 
 ## Compilation / Usage
  * Setup the ROS environment by running `roscore` in one terminal
- * To launch the default `navigation_node`, run `roslaunch turtlebot_stage turtlebot_in_stage.launch` in another terminal
- * Start the `delivery-robot` by running `python planner.py`
+ * To launch the `delivery_robot`, run `roslaunch delivery_robot delivery_robot.launch` in another terminal
 
 
