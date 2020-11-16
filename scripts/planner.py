@@ -11,6 +11,7 @@ from nav_msgs.srv import GetPlan
 from cPose import cPose
 from heuristics import heuristic
 
+
 class Grid:
     """
     helper class to keep grid-specific details
@@ -63,7 +64,7 @@ class Planner:
         """
         package_number = 0
         curr_load = self.capacity
-        self.destinations = heuristic('chebyshev', self.control_center, self.destinations)
+        self.destinations = heuristic('euclidean', self.control_center, self.destinations)
         while package_number < len(self.destinations):
             goal_x, goal_y = self.destinations[package_number].x, self.destinations[package_number].y
             if curr_load == 0:
@@ -192,6 +193,7 @@ class Planner:
         self.listener.waitForTransform('/map', '/base_link', rospy.Time(0), rospy.Duration(5.0))
         (current_pose.position, current_pose.orientation) = self.listener.lookupTransform('/map', '/base_link', rospy.Time(0))
         return cPose(current_pose.position[0], current_pose.position[1])
+
 
 
 # If the python node is executed as main process (sourced directly)
