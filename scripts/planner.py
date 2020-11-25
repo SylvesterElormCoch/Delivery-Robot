@@ -11,6 +11,7 @@ from nav_msgs.srv import GetPlan
 from cPose import cPose
 from heuristics import heuristic
 
+
 class Grid:
     """
     helper class to keep grid-specific details
@@ -200,6 +201,7 @@ class Planner:
         (current_pose.position, current_pose.orientation) = self.listener.lookupTransform('/map', '/base_link', rospy.Time(0))
         print("Current postion " + str(current_pose))
         return cPose(current_pose.position[0], current_pose.position[1])
+
 
 
 # If the python node is executed as main process (sourced directly)
