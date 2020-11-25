@@ -11,12 +11,13 @@ When all delivery locations are visited, the program ends and a summary is print
 * The robot should complete all deliveries, ensuring the right packages are delivered to the right destinations
 * The robot should
 ## Other materials provided
-See the [maps]() for some test maps.
+See the [maps](/Maps/README.md) for some test maps.
 
 
 ## Compilation / Usage
  * Setup the ROS environment by running `roscore` in one terminal
  * Run `source ~devel/setup.bash`
+ * Modify the `launch` file to include the map intended for testing
  * To launch the `delivery_robot`, run `roslaunch delivery_robot delivery_robot.launch` in another terminal
 
 

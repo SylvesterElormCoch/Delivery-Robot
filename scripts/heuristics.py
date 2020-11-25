@@ -2,6 +2,7 @@
 from math import sqrt, pow
 
 
+
 ########### BASIC HEURISTICS ###########
 def euclidean_sort(start, goals_list):
     '''
@@ -155,7 +156,7 @@ def dynamic_helper(name, start, goals_list):
         return dynamic_chebyshev_helper(start, goals_list)
     elif name == 'cosine':
         return dynamic_cosine_helper(start, goals_list)
-
+    
 
 def dynamic_euclidean_helper(curr, goals_list):
     '''
@@ -252,15 +253,18 @@ def dynamic_cosine_helper(curr, goals_list):
     sorted_goals = []
     dist_dict = {}
 
-    if curr.x == 0 and curr.y == 0:
-        print('curr cannot be the origin!')
-        return 
+    #if curr.x == 0 and curr.y == 0:
+    #    print('curr cannot be the origin!')
+    #    return 
 
     s_norm = sqrt(pow(curr.x, 2) + pow(curr.y, 2))
     for i in range(len(goals_list)):
         dot = (goals_list[i].x * curr.x) + (goals_list[i].y * curr.y)
         g_norm = sqrt(pow(goals_list[i].x, 2) + pow(goals_list[i].y, 2))
-        distance = dot / (s_norm * g_norm)
+        if (s_norm * g_norm == 0):
+            distance = 0
+        else:
+            distance = dot / (s_norm * g_norm)
         dist_dict[i] = distance
     
     sort_dist_dict = sorted(dist_dict.items(), key=lambda x: x[1])
