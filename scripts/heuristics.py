@@ -2,6 +2,7 @@
 from math import sqrt, pow
 
 
+
 ########### BASIC HEURISTICS ###########
 def euclidean_sort(start, goals_list):
     '''
@@ -56,8 +57,8 @@ def minkowski_sort(start, goals_list, p=3):
     dist_dict = {}
 
     for i in range(len(goals_list)):
-        x_diff = pow(goals_list[i].x - start.x, p)
-        y_diff = pow(goals_list[i].y - start.y, p)
+        x_diff = pow(abs(goals_list[i].x - start.x), p)
+        y_diff = pow(abs(goals_list[i].y - start.y), p)
         distance = sqrt(x_diff + y_diff)
         dist_dict[i] = distance
 
@@ -100,15 +101,14 @@ def cosine_sort(start, goals_list):
     sorted_goals = []
     dist_dict = {}
 
-    if start.x == 0 and start.y == 0:
-        print('start cannot be the origin!')
-        return 
-
     s_norm = sqrt(pow(start.x, 2) + pow(start.y, 2))
     for i in range(len(goals_list)):
         dot = (goals_list[i].x * start.x) + (goals_list[i].y * start.y)
         g_norm = sqrt(pow(goals_list[i].x, 2) + pow(goals_list[i].y, 2))
-        distance = dot / (s_norm * g_norm)
+         if (s_norm * g_norm == 0):
+            distance = 0
+        else:
+            distance = dot / (s_norm * g_norm)
         dist_dict[i] = distance
     
     sort_dist_dict = sorted(dist_dict.items(), key=lambda x: x[1])
@@ -155,7 +155,7 @@ def dynamic_helper(name, start, goals_list):
         return dynamic_chebyshev_helper(start, goals_list)
     elif name == 'cosine':
         return dynamic_cosine_helper(start, goals_list)
-
+    
 
 def dynamic_euclidean_helper(curr, goals_list):
     '''
@@ -200,7 +200,7 @@ def dynamic_manhattan_helper(curr, goals_list):
     return sorted_goals[0]
 
 
-def dynamic_minkowski_helper(curr, goals_list):
+def dynamic_minkowski_helper(curr, goals_list, p=3):
     '''
     Helper function for dynamic_minkowski_sort(). Returns the
     closest goal to the current point
@@ -209,8 +209,8 @@ def dynamic_minkowski_helper(curr, goals_list):
     dist_dict = {}
 
     for i in range(len(goals_list)):
-        x_diff = pow(goals_list[i].x - curr.x, p)
-        y_diff = pow(goals_list[i].y - curr.y, p)
+        x_diff = pow(abs(goals_list[i].x - curr.x), p)
+        y_diff = pow(abs(goals_list[i].y - curr.y), p)
         distance = sqrt(x_diff + y_diff)
         dist_dict[i] = distance
 
@@ -252,15 +252,14 @@ def dynamic_cosine_helper(curr, goals_list):
     sorted_goals = []
     dist_dict = {}
 
-    if curr.x == 0 and curr.y == 0:
-        print('curr cannot be the origin!')
-        return 
-
     s_norm = sqrt(pow(curr.x, 2) + pow(curr.y, 2))
     for i in range(len(goals_list)):
         dot = (goals_list[i].x * curr.x) + (goals_list[i].y * curr.y)
         g_norm = sqrt(pow(goals_list[i].x, 2) + pow(goals_list[i].y, 2))
-        distance = dot / (s_norm * g_norm)
+        if (s_norm * g_norm == 0):
+            distance = 0
+        else:
+            distance = dot / (s_norm * g_norm)
         dist_dict[i] = distance
     
     sort_dist_dict = sorted(dist_dict.items(), key=lambda x: x[1])

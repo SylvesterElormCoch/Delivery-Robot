@@ -41,13 +41,12 @@ class Planner:
         self.listener = tf.TransformListener()
         # self.validate_destinations() Assume destinations are valid
         self.control_center = self.get_current_position()
-        self.curr_marker_id = 0
-        self.global_path = [] # all poses in path, (may be handy for distance calculations)
+        self.global_path = [] 
         start_time = rospy.get_time()
         self.make_deliveries()
         end_time = rospy.get_time()
         rospy.loginfo("Total time taken " +  (str(end_time - start_time)) +  " secs") 
-        self.publish_path(self.global_path)
+        self.compute_distance(self.global_path)
         rospy.signal_shutdown("Delivery Complete!")
     
 
@@ -64,16 +63,17 @@ class Planner:
         """
         package_number = 0
         curr_load = self.capacity
-        self.destinations = heuristic('euclidean', self.control_center, self.destinations)
+        #self.destinations = heuristic('euclidean', self.control_center, self.destinations)
+        self.destinations = heuristic('dynamic', self.control_center, self.destinations, dynamic_name='chebyshev')
         while package_number < len(self.destinations):
             goal_x, goal_y = self.destinations[package_number].x, self.destinations[package_number].y
             if curr_load == 0:
-                result = self.move_to_goal(self.control_center.position[0], self.control_center.position[1])
+                result = self.move_to_goal(self.control_center.x, self.control_center.y)
                 rospy.loginfo("RETURNING TO CONTROL CENTER")
                 curr_load = self.capacity
             else:
                 result = self.move_to_goal(goal_x, goal_y)
-                rospy.loginfo("DELIVERED PACKAGE " + str(package_number))
+                rospy.loginfo("DELIVERED PACKAGE " + str(package_number + 1))
                 curr_load -= 1
                 package_number += 1
 
@@ -92,15 +92,14 @@ class Planner:
         filters out destinations with no a reachable path from the start location
         """
         rospy.loginfo("Checking validitiy of destinations...")
-        print(self.map.cell_at(4.5, 0))
 
 
     def setup_server(self):
-        """"
+        """
         Create an action client called "move_base" with action definition file "MoveBaseAction", 
         Waits until the action server has started up and started listening for goals.
         """
-        self.client = actionlib.SimpleActionClient('move_base',MoveBaseAction)
+        self.client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
         self.client.wait_for_server()
 
 
@@ -151,18 +150,26 @@ class Planner:
             return self.client.get_result()   
 
 
-    def publish_path(self, path):
+    def compute_distance(self, path):
         """
         publishes path locations as markers 
-        """       
+        """ 
+        full_length =  0.0      
         if not path:
             print("No path found")
             return
-        # print(len(path))
-        for pose_stamp in path:
-            self.publish_marker(pose_stamp, self.curr_marker_id)
-            self.curr_marker_id += 1 
-
+        
+        
+        path_length = 0
+        for i in range(len(path) - 1):
+            pose_stamp = path[i]
+            position_a_x = path[i].pose.position.x
+            position_b_x = path[i+1].pose.position.x
+            position_a_y = path[i].pose.position.y
+            position_b_y = path[i+1].pose.position.y
+            path_length += numpy.sqrt(numpy.power((position_b_x - position_a_x), 2) + numpy.power((position_b_y- position_a_y), 2))
+        
+        rospy.loginfo(str(path_length) + " meters")
 
     def publish_marker(self, curr_pose, id):
         """
@@ -192,6 +199,7 @@ class Planner:
         current_pose = Pose()
         self.listener.waitForTransform('/map', '/base_link', rospy.Time(0), rospy.Duration(5.0))
         (current_pose.position, current_pose.orientation) = self.listener.lookupTransform('/map', '/base_link', rospy.Time(0))
+        print("Current postion " + str(current_pose))
         return cPose(current_pose.position[0], current_pose.position[1])
 
 
@@ -199,8 +207,11 @@ class Planner:
 # If the python node is executed as main process (sourced directly)
 if __name__ == '__main__':
     try:
-        destinations = [[3.0, 3.5], [6.5, 4.9] , [7.0, 1.2] , [4.5, 7.5], [7.8, 4.5]]
-        plan = Planner(destinations=destinations, capacity=20)
+        destinations = [[3.0, 3.5], [6.5, 4.9], [7.0, 1.2], [4.5, 7.5], [7.8, 4.5]]
+        # #destinations = [[1.2, 3.62], [6.92, 1.58], [8.26, 2.43], [7.82, 6.62], [9.04, 7.86], [4.31, 6.43]]
+        # destinations = [[2.92, 2.00, 55.19], [5.41, 0.75, -4.23], [6.96, 1.86, 132.41], [5.85, 4.38, -7.66], [8.41 1.73, 76.16], [7.13, 7.47, 171.74]]
+        # destinations = [[]]
+        plan = Planner(destinations=destinations, capacity=200)
         rospy.spin()
     except rospy.ROSInterruptException:
         rospy.loginfo("Navigation test finished.")
