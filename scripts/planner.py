@@ -41,7 +41,7 @@ class Planner:
         self.listener = tf.TransformListener()
         # self.validate_destinations() Assume destinations are valid
         self.control_center = self.get_current_position()
-        self.global_path = [] # all poses in path, (may be handy for distance calculations)
+        self.global_path = [] 
         start_time = rospy.get_time()
         self.make_deliveries()
         end_time = rospy.get_time()
@@ -73,7 +73,7 @@ class Planner:
                 curr_load = self.capacity
             else:
                 result = self.move_to_goal(goal_x, goal_y)
-                rospy.loginfo("DELIVERED PACKAGE " + str(package_number))
+                rospy.loginfo("DELIVERED PACKAGE " + str(package_number + 1))
                 curr_load -= 1
                 package_number += 1
 
@@ -95,11 +95,11 @@ class Planner:
 
 
     def setup_server(self):
-        """"
+        """
         Create an action client called "move_base" with action definition file "MoveBaseAction", 
         Waits until the action server has started up and started listening for goals.
         """
-        self.client = actionlib.SimpleActionClient('move_base',MoveBaseAction)
+        self.client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
         self.client.wait_for_server()
 
 
@@ -208,7 +208,10 @@ class Planner:
 if __name__ == '__main__':
     try:
         destinations = [[3.0, 3.5], [6.5, 4.9], [7.0, 1.2], [4.5, 7.5], [7.8, 4.5]]
-        plan = Planner(destinations=destinations, capacity=2)
+        # #destinations = [[1.2, 3.62], [6.92, 1.58], [8.26, 2.43], [7.82, 6.62], [9.04, 7.86], [4.31, 6.43]]
+        # destinations = [[2.92, 2.00, 55.19], [5.41, 0.75, -4.23], [6.96, 1.86, 132.41], [5.85, 4.38, -7.66], [8.41 1.73, 76.16], [7.13, 7.47, 171.74]]
+        # destinations = [[]]
+        plan = Planner(destinations=destinations, capacity=200)
         rospy.spin()
     except rospy.ROSInterruptException:
         rospy.loginfo("Navigation test finished.")

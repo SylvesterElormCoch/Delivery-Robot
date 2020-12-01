@@ -1,4 +1,4 @@
-include "turtlebot.inc"
+include "../turtlebot.inc"
 
 define floorplan model
 (
@@ -19,26 +19,26 @@ define floorplan model
 resolution 0.02
 interval_sim 100  # simulation timestep in milliseconds
 
-# window
-# (
-# size [ 600.0 700.0 ]
-#  center [ 0.0 0.0 ]
-#  rotate [ 0.0 0.0 ]
-#  scale 60
-# )
+window
+(
+  size [ 600.0 700.0 ]
+  center [ 0.0 0.0 ]
+  rotate [ 0.0 0.0 ]
+  scale 60
+)
 
 floorplan
 (
   name "maze"
-  bitmap "better500.pgm"
-  size [ 10.0 10.0 0.0 ]
+  bitmap "./maze-9.png"
+  size [ 10.0 10.0 2.0 ]
   pose [  5.0  5.0 0.0 0.0 ]
 )
 
 # throw in a robot
 turtlebot
 (
-  pose [ 4.6 1.7 0.0 0.0 ]
+  pose [ 2.0 2.0 0.0 0.0 ]
   name "turtlebot"
   color "black"
 )

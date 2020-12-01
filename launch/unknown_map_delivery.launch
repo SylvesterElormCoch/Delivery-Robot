@@ -1,42 +1,19 @@
-<!-- 
-  Turtlebot navigation simulation:
-  - stage
-  - map_server
-  - move_base
-  - static map
-  - amcl
-  - rviz view
- -->
 <launch>
   <master auto="start"/>
+  <arg name="scan_topic"  default="/scan" />
+  <arg name="base_frame"  default="base_link"/>
+  <arg name="odom_frame"  default="odom"/>
+  <arg name="world_file"  default="$(find delivery_robot)/Maps/test-map-1/maze-1.world"/>
+
   <arg name="base"       default="$(optenv TURTLEBOT_BASE kobuki)"/>  <!-- create, rhoomba -->
   <arg name="stacks"     default="$(optenv TURTLEBOT_STACKS hexagons)"/>  <!-- circles, hexagons -->
   <arg name="3d_sensor"  default="$(optenv TURTLEBOT_3D_SENSOR kinect)"/>  <!-- kinect, asus_xtion_pro -->
-
-  <!-- Modify to use custom map file -->
-  <arg name="map_file"       default="$(find delivery_robot)/Maps/test-map-1/maze-1.yaml"/>
-  <arg name="world_file"     default="$(find delivery_robot)/Maps/test-map-1/maze-1.world"/>
 
   <arg name="initial_pose_x" default="2.0"/>
   <arg name="initial_pose_y" default="2.0"/> 
   <arg name="initial_pose_a" default="0.0"/>
 
   <param name="/use_sim_time" value="true"/>
-  <!--  ******************** Stage ********************  -->
-  <!-- 
-        Publishes transforms:
-          /base_link -> /base_laser
-          /base_footprint -> /base_link (identity)
-          /odom -> base_footprint
-        Publishes topics:
-          /odom : odometry data from the simulated odometry
-          /base_scan : laser data from the simulated laser
-          /base_pose_ground_truth : the ground truth pose
-        Parameters:
-          base_watchdog_timeout : time (s) after receiving the last command on cmd_vel before stopping the robot
-        Args:
-          -g : run in headless mode.
-  --> 
   <node pkg="stage_ros" type="stageros" name="stageros" args="$(arg world_file)">
     <param name="base_watchdog_timeout" value="0.5"/>
     <remap from="odom" to="odom"/>
@@ -55,7 +32,48 @@
     <param name="use_gui" value="true"/>
   </node>
 
-  <!-- Command Velocity multiplexer -->
+  <!--  ***************** Gmapping ********************** -->
+  <node pkg="gmapping" type="slam_gmapping" name="slam_gmapping">
+    <param name="base_frame" value="$(arg base_frame)"/>
+    <param name="odom_frame" value="$(arg odom_frame)"/>
+    <param name="map_update_interval" value="5.0"/>
+    <remap from="scan" to="$(arg scan_topic)"/>
+
+    <param name="maxUrange" value="6.0"/>
+    <param name="maxRange" value="6.5"/>
+    <param name="sigma" value="0.05"/>
+    <param name="kernelSize" value="1"/>
+    <param name="lstep" value="0.05"/>
+    <param name="astep" value="0.05"/>
+    <param name="iterations" value="5"/>
+    <param name="lsigma" value="0.075"/>
+    <param name="ogain" value="3.0"/>
+    <param name="lskip" value="0"/>
+    <param name="minimumScore" value="200"/>
+    <param name="srr" value="0.01"/>
+    <param name="srt" value="0.02"/>
+    <param name="str" value="0.01"/>
+    <param name="stt" value="0.02"/>
+    <param name="linearUpdate" value="0.5"/>
+    <param name="angularUpdate" value="0.436"/>
+    <param name="temporalUpdate" value="-1.0"/>
+    <param name="resampleThreshold" value="0.5"/>
+    <param name="particles" value="80"/>
+
+    <param name="xmin" value="-1.0"/>
+    <param name="ymin" value="-1.0"/>
+    <param name="xmax" value="1.0"/>
+    <param name="ymax" value="1.0"/>
+
+    <param name="delta" value="0.05"/>
+    <param name="llsamplerange" value="0.01"/>
+    <param name="llsamplestep" value="0.01"/>
+    <param name="lasamplerange" value="0.005"/>
+    <param name="lasamplestep" value="0.005"/>
+    <remap from="scan" to="$(arg scan_topic)"/>
+  </node>
+
+  <!-- ********* Command Velocity multiplexer ********* -->
   <node pkg="nodelet" type="nodelet" name="mobile_base_nodelet_manager" args="manager"/>
   <node pkg="nodelet" type="nodelet" name="cmd_vel_mux" args="load yocs_cmd_vel_mux/CmdVelMuxNodelet mobile_base_nodelet_manager">
     <param name="yaml_cfg_file" value="$(find turtlebot_bringup)/param/mux.yaml"/>
@@ -65,22 +83,9 @@
   <!--  ************** Navigation  ***************  -->
   <include file="$(find turtlebot_navigation)/launch/includes/move_base.launch.xml"/>
 
-  <!--  ****** Maps *****  -->
-  <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)">
-    <param name="frame_id" value="/map"/>
-  </node>
-
-  <include file="$(find turtlebot_navigation)/launch/includes/amcl/amcl.launch.xml">
-    <arg name="scan_topic" value="scan"/>
-    <arg name="use_map_topic" value="true"/>
-    <arg name="initial_pose_x" value="$(arg initial_pose_x)"/>
-    <arg name="initial_pose_y" value="$(arg initial_pose_y)"/>
-    <arg name="initial_pose_a" value="$(arg initial_pose_a)"/>
-  </include>
-
   <!--  **************** Visualisation ****************  -->
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find turtlebot_stage)/rviz/robot_navigation.rviz"/>
 
   <!-- ************** Planner ************ -->
-  <node name="delivery_robot" pkg="delivery_robot" type="planner.py"/>
+  <node name="delivery_robot" pkg="delivery_robot" type="planner.py" output="screen"/>
 </launch>

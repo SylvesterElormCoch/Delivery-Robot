@@ -18,6 +18,7 @@ See the [maps](/Maps/README.md) for some test maps.
  * Setup the ROS environment by running `roscore` in one terminal
  * Run `source ~devel/setup.bash`
  * Modify the `launch` file to include the map intended for testing
- * To launch the `delivery_robot`, run `roslaunch delivery_robot delivery_robot.launch` in another terminal
+ * To launch the `delivery_robot` within an `unknown` map, run `roslaunch delivery_robot unknown_map_delivery.launch` in another terminal
+ * To launch the `delivery_robot` within an `known` map, run `roslaunch delivery_robot known_map_delivery.launch` in another terminal
 
 
