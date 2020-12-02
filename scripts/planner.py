@@ -63,8 +63,8 @@ class Planner:
         """
         package_number = 0
         curr_load = self.capacity
-        #self.destinations = heuristic('euclidean', self.control_center, self.destinations)
-        self.destinations = heuristic('dynamic', self.control_center, self.destinations, dynamic_name='chebyshev')
+        self.destinations = heuristic('manhattan', self.control_center, self.destinations)
+        # self.destinations = heuristic('dynamic', self.control_center, self.destinations, dynamic_name='chebyshev')
         while package_number < len(self.destinations):
             goal_x, goal_y = self.destinations[package_number].x, self.destinations[package_number].y
             if curr_load == 0:
@@ -208,9 +208,6 @@ class Planner:
 if __name__ == '__main__':
     try:
         destinations = [[3.0, 3.5], [6.5, 4.9], [7.0, 1.2], [4.5, 7.5], [7.8, 4.5]]
-        # #destinations = [[1.2, 3.62], [6.92, 1.58], [8.26, 2.43], [7.82, 6.62], [9.04, 7.86], [4.31, 6.43]]
-        # destinations = [[2.92, 2.00, 55.19], [5.41, 0.75, -4.23], [6.96, 1.86, 132.41], [5.85, 4.38, -7.66], [8.41 1.73, 76.16], [7.13, 7.47, 171.74]]
-        # destinations = [[]]
         plan = Planner(destinations=destinations, capacity=200)
         rospy.spin()
     except rospy.ROSInterruptException:
