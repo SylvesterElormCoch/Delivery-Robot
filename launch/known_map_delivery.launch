@@ -14,8 +14,8 @@
   <arg name="3d_sensor"  default="$(optenv TURTLEBOT_3D_SENSOR kinect)"/>  <!-- kinect, asus_xtion_pro -->
 
   <!-- Modify to use custom map file -->
-  <arg name="map_file"       default="$(find delivery_robot)/Maps/test-map-10/maze-10.yaml"/>
-  <arg name="world_file"     default="$(find delivery_robot)/Maps/test-map-10/maze-10.world"/>
+  <arg name="map_file"       default="$(find delivery_robot)/Maps/test-map-1/maze-1.yaml"/>
+  <arg name="world_file"     default="$(find delivery_robot)/Maps/test-map-1/maze-1.world"/>
 
   <arg name="initial_pose_x" default="2.0"/>
   <arg name="initial_pose_y" default="2.0"/> 

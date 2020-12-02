@@ -105,7 +105,7 @@ def cosine_sort(start, goals_list):
     for i in range(len(goals_list)):
         dot = (goals_list[i].x * start.x) + (goals_list[i].y * start.y)
         g_norm = sqrt(pow(goals_list[i].x, 2) + pow(goals_list[i].y, 2))
-         if (s_norm * g_norm == 0):
+        if (s_norm * g_norm == 0):
             distance = 0
         else:
             distance = dot / (s_norm * g_norm)
